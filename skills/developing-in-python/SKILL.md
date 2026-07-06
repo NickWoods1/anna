@@ -17,6 +17,7 @@ description: Pragmatic Python development workflow for Codex. Use when working o
    - Keep public APIs stable unless the user asked for an API change.
    - Avoid broad dependency, formatting, or lockfile churn unless needed for the task.
    - Use standard-library tools when they are adequate; add dependencies only when they remove meaningful complexity.
+   - For new Python development, begin from a frozen Pydantic config in a `core/` package unless the existing project structure clearly dictates otherwise.
 
 3. Verify with the narrowest useful checks first, then broaden when risk warrants it.
    - Run the affected tests before the whole suite when the suite may be slow.
@@ -30,6 +31,23 @@ description: Pragmatic Python development workflow for Codex. Use when working o
 - Do not install packages globally when a project environment is available.
 - If a virtual environment must be created and the repo does not prescribe one, prefer `.venv` and keep it untracked.
 - Treat lockfiles as intentional. Update them only when dependencies changed or the package manager requires it.
+
+## Architecture Preferences
+
+- Prefer a clear dependency hierarchy. Low-level modules should not import orchestration, entry points, UI, CLI, web handlers, or infrastructure code.
+- For new projects or substantial new subsystems, start with a `core/` package containing the durable domain model, frozen Pydantic config, constants, and pure behavior.
+- Keep constants, settings, and configuration definitions in one obvious place, usually `core/config.py` or a small `core/config/` package.
+- Make configs immutable by default. Use frozen Pydantic models for application configuration and pass config objects explicitly instead of reading environment or globals throughout the codebase.
+- Keep state transforms, validation, parsing, and pure functions separate from wiring and side effects.
+- Keep orchestration, I/O, framework glue, job runners, and entry-point wiring in separate modules above the core layer.
+- Make entry points consistent. CLIs, scripts, services, workers, and notebooks should all construct config, initialize dependencies, call the same orchestration layer, and return or exit in predictable ways.
+- When adding a new directory or package, make its role clear from the name and keep imports flowing in one direction:
+
+```text
+entrypoints -> orchestration/wiring -> core transforms/functions -> core config/constants/models
+```
+
+- Do not split code into tiny layers mechanically. Use the hierarchy to keep dependencies understandable, tests direct, and side effects contained.
 
 ## Testing and Debugging
 
@@ -52,7 +70,7 @@ python -m unittest path.to.test_module
 ## Python Code Standards
 
 - Prefer clear, boring Python over clever constructs.
-- Use explicit data shapes: dataclasses, TypedDict, pydantic models, or simple dictionaries according to existing project style.
+- Use explicit data shapes: frozen Pydantic models for config, and dataclasses, TypedDict, Pydantic models, or simple dictionaries for other data according to existing project style.
 - Preserve exception context unless intentionally converting errors for a public API.
 - Use context managers for files, temporary directories, locks, subprocesses, and resources that need cleanup.
 - Avoid mutable default arguments.
