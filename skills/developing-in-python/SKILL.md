@@ -49,6 +49,17 @@ entrypoints -> orchestration/wiring -> core transforms/functions -> core config/
 
 - Do not split code into tiny layers mechanically. Use the hierarchy to keep dependencies understandable, tests direct, and side effects contained.
 
+## Comprehensibility
+
+- Optimize for code that fits in a human working set. A reader should be able to understand one behavior without loading the whole project into memory.
+- Prefer small vertical slices that can be run, tested, and reviewed end to end over broad speculative scaffolding.
+- Use names, module boundaries, and function signatures to make intent explicit; avoid hidden coupling, ambient globals, and surprising side effects.
+- Keep functions short enough to scan, but do not fragment a coherent idea just to reduce line count.
+- Make invalid states hard to represent with typed config, explicit domain models, and narrow interfaces.
+- Use checklists for repeated change workflows: discover structure, identify boundaries, make the change, test the slice, then broaden verification.
+- Treat tests as executable explanations. Tests should show behavior through clear setup, meaningful assertions, and stable examples.
+- When code becomes hard to explain in a short hand-off, reduce scope, rename concepts, extract a boundary, or simplify the data flow before adding more behavior.
+
 ## Testing and Debugging
 
 - For pytest projects, prefer targeted commands like:
