@@ -1,6 +1,6 @@
 ---
 name: developing-in-python
-description: Pragmatic Python development workflow for Codex. Use when working on Python projects, scripts, packages, tests, CLIs, data workflows, automation, or backend services; when editing .py, pyproject.toml, requirements files, lockfiles, pytest/unittest suites, type-checking config, linting config, or Python packaging; or when the user asks to implement, debug, refactor, test, review, or explain Python code.
+description: Pragmatic Python development workflow for Codex using uv for package management, ruff for linting/formatting, and pyrefly for type checking. Use when working on Python projects, scripts, packages, tests, CLIs, data workflows, automation, or backend services; when editing .py, pyproject.toml, uv.lock, pytest/unittest suites, ruff config, pyrefly config, or Python packaging; or when the user asks to implement, debug, refactor, test, review, or explain Python code.
 ---
 
 # Developing in Python
@@ -8,8 +8,8 @@ description: Pragmatic Python development workflow for Codex. Use when working o
 ## Core Workflow
 
 1. Discover the project shape before changing code.
-   - Check `pyproject.toml`, `requirements*.txt`, `setup.py`, `setup.cfg`, `tox.ini`, `noxfile.py`, `uv.lock`, `poetry.lock`, `Pipfile`, `Makefile`, and CI config.
-   - Identify the test runner, package manager, Python version, formatter, linter, and type checker from repo files.
+   - Check `pyproject.toml`, `uv.lock`, `requirements*.txt`, `setup.py`, `setup.cfg`, `tox.ini`, `noxfile.py`, `Makefile`, and CI config.
+   - Identify the test runner, Python version, and any existing exceptions to the default `uv` + `ruff` + `pyrefly` toolchain.
    - Prefer existing commands from docs, Makefile, task runner config, or CI over inventing new ones.
 
 2. Make scoped changes.
@@ -21,16 +21,18 @@ description: Pragmatic Python development workflow for Codex. Use when working o
 
 3. Verify with the narrowest useful checks first, then broaden when risk warrants it.
    - Run the affected tests before the whole suite when the suite may be slow.
-   - Run formatting, linting, and type checks if the repo already uses them.
+   - Run `ruff` and `pyrefly` checks for Python changes unless the project cannot support them yet; note the blocker if skipped.
    - If a command fails because dependencies are missing, inspect the project's setup path and report the exact blocker.
 
 ## Environment Handling
 
-- Use the repo's existing environment convention: `.venv`, `venv`, `uv`, Poetry, Pipenv, Conda, tox, nox, Docker, or plain system Python.
-- Prefer `python -m <tool>` when it avoids PATH ambiguity.
+- Use `uv` for package management, dependency resolution, virtual environments, lockfiles, and Python tool execution.
+- Prefer `uv run <tool>` for project commands so tools run inside the project environment.
+- Prefer `uv add`, `uv add --dev`, `uv remove`, `uv sync`, and `uv lock` over direct `pip`, Poetry, Pipenv, or Conda commands.
 - Do not install packages globally when a project environment is available.
-- If a virtual environment must be created and the repo does not prescribe one, prefer `.venv` and keep it untracked.
-- Treat lockfiles as intentional. Update them only when dependencies changed or the package manager requires it.
+- If a virtual environment must be created, use `uv venv` and keep `.venv` untracked.
+- Treat `uv.lock` as intentional. Update it only when dependencies changed or `uv` requires it.
+- If a repo already uses another package manager, migrate only when the user asks or the task requires it; otherwise preserve behavior and document the mismatch.
 
 ## Architecture Preferences
 
@@ -65,13 +67,13 @@ entrypoints -> orchestration/wiring -> core transforms/functions -> core config/
 - For pytest projects, prefer targeted commands like:
 
 ```bash
-python -m pytest path/to/test_file.py::test_name
+uv run pytest path/to/test_file.py::test_name
 ```
 
 - For unittest projects, use:
 
 ```bash
-python -m unittest path.to.test_module
+uv run python -m unittest path.to.test_module
 ```
 
 - When fixing a bug, try to reproduce it with a failing test or minimal command before editing.
@@ -91,17 +93,25 @@ python -m unittest path.to.test_module
 
 ## Type Checking
 
+- Use `pyrefly` as the default type checker for Python projects.
 - Follow the project's current typing strictness.
 - Add annotations where they clarify contracts or satisfy existing type checks.
 - Do not perform large annotation drives as part of unrelated work.
 - Use `typing.Protocol`, generics, or overloads only when they simplify real call sites or public contracts.
 
+## Linting and Formatting
+
+- Use `ruff` as the default linter and formatter.
+- Prefer `uv run ruff check .` for linting.
+- Prefer `uv run ruff format .` for formatting when formatting is requested or needed.
+- Avoid introducing Black, isort, Flake8, or other overlapping format/lint tools in new projects unless the existing repo already depends on them.
+
 ## Dependencies
 
 - Before adding a dependency, check whether the repo already has an equivalent package or helper.
-- For runtime dependencies, update the canonical dependency file and lockfile if present.
-- For dev-only tools, keep them in the project's dev/test dependency group.
-- After dependency changes, run the project's install or lock command if available.
+- For runtime dependencies, use `uv add <package>`.
+- For dev-only tools, use `uv add --dev <package>`.
+- After dependency changes, run `uv lock` or `uv sync` as appropriate.
 
 ## Hand-Off
 
