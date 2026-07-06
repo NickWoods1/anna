@@ -1,0 +1,4 @@
+interface:
+  display_name: "Developing in Python"
+  short_description: "Pragmatic Python development workflow"
+  default_prompt: "Use $developing-in-python to implement and verify this Python change."
