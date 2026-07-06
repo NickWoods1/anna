@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Local scratch space
+.tmp/
+scratch/
+
+# Secrets and private local config
+.env
+.env.*
+!.env.example
+
