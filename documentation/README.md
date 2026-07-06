@@ -1,4 +1,4 @@
-# Knowledge Base
+# Documentation
 
 Store reusable context here.
 
@@ -8,4 +8,3 @@ Suggested subtopics:
 - `people/` - working preferences and collaboration context.
 - `references/` - durable external references summarized in your own words.
 - `decisions/` - important choices and why they were made.
-

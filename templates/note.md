@@ -1,8 +1,0 @@
-# Title
-
-## Context
-
-## Details
-
-## Links
-
